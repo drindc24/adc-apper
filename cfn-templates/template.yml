@@ -13,3 +13,32 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: vpc.yml
+  ADCRDSStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: rds.yml
+      Parameters:
+        DBAppCIDRs:
+          Fn::Join:
+            - ','
+            -
+              - Fn::GetAtt:
+                  - ADCVPCStack
+                  - Outputs.PrivateSubnetACDIR
+              - Fn::GetAtt:
+                  - ADCVPCStack
+                  - Outputs.PrivateSubnetBCDIR
+        VPCId:
+          Fn::GetAtt:
+            - ADCVPCStack
+            - Outputs.VPCId
+        DBSubnetGroupIDs:
+          Fn::Join:
+            - ','
+            -
+              - Fn::GetAtt:
+                  - ADCVPCStack
+                  - Outputs.DatabaseSubnetA
+              - Fn::GetAtt:
+                  - ADCVPCStack
+                  - Outputs.DatabaseSubnetB

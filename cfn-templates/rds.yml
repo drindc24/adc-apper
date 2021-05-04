@@ -1,0 +1,121 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: This template creates RDS MySQL Instance
+
+Parameters:
+  DBInstanceID:
+    Default: ADCdbinstance
+    Description: My database instance
+    Type: String
+    MinLength: '1'
+    MaxLength: '63'
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    ConstraintDescription: >-
+      Must begin with a letter and must not end with a hyphen or contain two
+
+  DBInstanceClass:
+    Default: db.t2.micro
+    Description: DB instance class
+    Type: String
+    ConstraintDescription: Must select a valid DB instance type.
+
+  DBAllocatedStorage:
+    Default: '10'
+    Description: The size of the database (GiB)
+    Type: Number
+    MinValue: '5'
+    MaxValue: '1024'
+    ConstraintDescription: must be between 10 and 65536 GiB.
+
+  DBName:
+    Default: ADC
+    Description: Please enter the desired DB Name
+    Type: String
+
+  DBUsername:
+    Default: ADC
+    Description: Please enter the desired DB Username
+    Type: String
+
+  DBPassword:
+    Default: thi$IsaVerYStR0ngPA$sWord
+    Description: Please enter the desired DB Password
+    Type: String
+
+  DBPort:
+    Default: 3306
+    Description: Please enter the desired DB Port
+    Type: String
+
+  DBSubnetGroupIDs:
+    Description: Please select the Subnet ID
+    ConstraintDescription: "Must be a list of subnet IDs"
+    Type: CommaDelimitedList
+
+  DBSubnetGroupName:
+    Default: ADCDBSubnetGroup
+    Description: Please enter a Subnet Group Name
+    Type: String
+
+  VPCId:
+    Description: Please enter the VPC ID
+    Type: AWS::EC2::VPC::Id
+
+  DBAppCIDRs:
+    Default: '10.0.4.0/24,10.0.5.0/24'
+    Description: Please enter the CIDR blocks(comma seperated)
+    Type: CommaDelimitedList
+
+
+Resources:
+  ADCDBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: ADC default DB Subnet Group
+      DBSubnetGroupName: !Ref DBSubnetGroupName
+      SubnetIds: !Ref DBSubnetGroupIDs
+      Tags:
+        - Key: Name
+          Value: ADCDBSubnetGroup
+
+  ADCDBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security Group For ADC RDS resources
+      GroupName: ADCDBSecurityGroup
+      VpcId: !Ref VPCId
+      SecurityGroupIngress:
+        - IpProtocol: 'tcp'
+          FromPort: !Ref DBPort
+          ToPort: !Ref DBPort
+          CidrIp: 10.0.4.0/24
+        - IpProtocol: 'tcp'
+          FromPort: !Ref DBPort
+          ToPort: !Ref DBPort
+          CidrIp: 10.0.5.0/24
+      Tags:
+        - Key: Name
+          Value: ADCDBSecurityGroup
+        - Key: Tier
+          Value: Database
+      VpcId: !Ref VPCId
+
+  ADCDB:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBInstanceIdentifier: !Ref DBInstanceID
+      DBName: !Ref DBName
+      Port: !Ref DBPort
+      Engine: MySQL
+      EngineVersion: 8.0.16
+      DBInstanceClass: !Ref DBInstanceClass
+      AllocatedStorage: !Ref DBAllocatedStorage
+      MasterUsername: !Ref DBUsername
+      MasterUserPassword: !Ref DBPassword
+      MultiAZ: true
+      DBSubnetGroupName: !Ref DBSubnetGroupName
+      VPCSecurityGroups:
+        - !Ref ADCDBSecurityGroup
+      Tags:
+        - Key: Name
+          Value: 'ADCDBInstance'
