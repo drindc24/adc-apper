@@ -1,0 +1,15 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: Common template for provisioning resources needed for the Challenges
+
+Parameters:
+  SubdomainPrefix:
+    Default: ADC
+    Description: Please enter the subdomain prefix
+    Type: String
+
+Resources:
+  ADCVPCStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: vpc.yml
