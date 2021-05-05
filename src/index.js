@@ -28,18 +28,18 @@ app.use(middlewares.errorHandler)
 const port = process.env.PORT || 1337
 
 const {
-  HOST,
-  USERNAME,
-  PASSWORD,
+  DB_HOST,
+  DB_USERNAME,
+  DB_PASSWORD,
   DATABASE
 } = process.env
 
 app.listen(port, () => {
   // DON'T EDIT or MODIFY!!!!
   const connection = mysql.createConnection({
-    host: HOST,
-    user: USERNAME,
-    password: PASSWORD,
+    host: DB_HOST,
+    user: DB_USERNAME,
+    password: DB_PASSWORD,
     database: DATABASE
   })
 
